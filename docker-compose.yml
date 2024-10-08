@@ -24,6 +24,7 @@ services:
     container_name: nginx
     ports:
       - 80:80
+      - 5173:5173
     volumes:
       - ./src:/var/www/html/app
       - phpmyadmin_data:/var/www/html/pma
@@ -110,7 +111,7 @@ services:
     volumes:
       - ./src:/var/www/html/app/
       - .env:/var/www/html/app/.env
-    working_dir: /var/www/html
+    working_dir: /var/www/html/app
     depends_on:
       - php
     user: ${USER:-lemp82}
@@ -124,8 +125,6 @@ services:
       context: ./mail_hog
       dockerfile: mail_hog.dockerfile
     container_name: mail_hog
-    logging:
-      driver: "none"
     ports:
       - 1025:1025
       - 8025:8025
@@ -180,4 +179,3 @@ services:
     entrypoint: ["npx"]
     networks:
       - lemp82
-
