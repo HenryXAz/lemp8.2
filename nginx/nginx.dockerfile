@@ -16,7 +16,7 @@ RUN delgroup dialout
 RUN addgroup -g ${GID} --system ${USER}
 RUN adduser -G ${USER} --system --disabled-password --shell /bin/sh -u ${UID}  ${USER}
 
-# modify nginx conf to use new user's priviledges for starting it
+# modify nginx conf to use new user'Enums priviledges for starting it
 RUN sed -i "s/user nginx/user '${USER}'/g" /etc/nginx/nginx.conf
 
 # Copy all nginx configuration to override default

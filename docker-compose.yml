@@ -1,11 +1,11 @@
 
 networks:
   lemp82:
-    name: lemp82
+    name: ${APP_NETWORK}
 
 volumes:
   lemp82_db: 
-    name: lemp82_db
+    name: ${DATABASE_VOLUME}  
     driver: local
   phpmyadmin_data:
     name: phpmyadmin_data
@@ -32,8 +32,7 @@ services:
     depends_on:
       - php
       - redis
-      - mysql
-      - phpmyadmin
+      - database
       - mail_hog
     networks:
       - lemp82
@@ -55,40 +54,57 @@ services:
     networks:
       - lemp82
 
-  mysql:
-    image: mariadb:10.6 
-    container_name: mysql
+  # mysql:
+  #   image: mariadb:10.6 
+  #   container_name: mysql
+  #   restart: unless-stopped
+  #   tty: true
+  #   ports:
+  #     - 3306:3306
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_USER: ${DB_USERNAME}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+  #     SERVICE_TAGS: dev
+  #     SERVICE_NAME: mysql
+  #   volumes:
+  #     - lemp82_db:/var/lib/mysql
+  #   networks:
+  #     - lemp82
+
+  # phpmyadmin:
+  #   image: phpmyadmin:fpm-alpine 
+  #   container_name: phpmyadmin
+  #   environment:
+  #     PMA_ARBITRARY: 1
+  #     PMA_HOST: ${DB_HOST}
+  #     PMA_USER: ${DB_USERNAME}
+  #     PMA_PASSWORD: ${DB_PASSWORD}
+  #     PMA_PORT: ${DB_PORT} 
+  #   volumes:
+  #     - phpmyadmin_data:/var/www/html
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - lemp82
+
+  database:
+    image: postgres:15.1-alpine
+    container_name: database
     restart: unless-stopped
     tty: true
     ports:
-      - 3306:3306
+      - 5432:5432
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
     volumes:
-      - lemp82_db:/var/lib/mysql
+      - lemp82_db:/var/lib/postgresql/data
     networks:
       - lemp82
 
-  phpmyadmin:
-    image: phpmyadmin:fpm-alpine 
-    container_name: phpmyadmin
-    environment:
-      PMA_ARBITRARY: 1
-      PMA_HOST: ${DB_HOST}
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-      PMA_PORT: ${DB_PORT} 
-    volumes:
-      - phpmyadmin_data:/var/www/html
-    depends_on:
-      - mysql
-    networks:
-      - lemp82
 
   redis:
     image: redis:alpine
@@ -144,7 +160,7 @@ services:
       - ./src:/var/www/html/app/
       - .env:/var/www/html/app/.env
     depends_on:
-      - mysql
+      - database
     working_dir: /var/www/html/app
     user: ${USER:-lemp82}
     profiles: ["artisan"]
